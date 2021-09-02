@@ -13,3 +13,6 @@ def getPDL(summoner, formatedDf):
         return int(formatedDf.loc[formatedDf['Invocador'] == summoner]['PDL'].iloc[:,0])
     except TypeError:
         return -1
+
+def aaa():
+    return('aaa')
