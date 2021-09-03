@@ -1,6 +1,6 @@
 GSHEET_SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 SPREADSHEET_ID = '1stCb-l0h1o5Kr0uBnldj4m-GvNX2mzudLvG1rK4GmFk'
-DISCORD_TOKEN=''
+DISCORD_TOKEN='ODc5MzM5NjAzMDI5NTQ1MDEw.YSOS0g.V2R4sKrY0EhosFjQGYFaCO3OJtY'
 DISCORD_GUILD='205482046062198785'
 DISCORD_CHANNEL=473302835098943509
 NOME_PLANILHA='Ranking x5 2.0.xlsx'
@@ -91,5 +91,5 @@ async def on_message(message):
           response = 'Não existem 10 jogadores online na sala '+ client.get_channel(DISCORD_CHANNEL).name + ' ou o nick do discord não coincide com o da planilha.'
           await message.channel.send(response)
 
-#keep_alive.keep_alive()
+keep_alive.keep_alive()
 client.run(DISCORD_TOKEN)
