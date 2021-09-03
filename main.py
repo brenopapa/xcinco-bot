@@ -1,34 +1,20 @@
 GSHEET_SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 SPREADSHEET_ID = '1stCb-l0h1o5Kr0uBnldj4m-GvNX2mzudLvG1rK4GmFk'
-DISCORD_TOKEN=''
+DISCORD_TOKEN='ODc5MzM5NjAzMDI5NTQ1MDEw.YSOS0g.V2R4sKrY0EhosFjQGYFaCO3OJtY'
 DISCORD_GUILD='205482046062198785'
 DISCORD_CHANNEL=473302835098943509
 NOME_PLANILHA='Ranking x5 2.0.xlsx'
 DATA_TAB='Ranking '
 
-from keep_alive import keep_alive
-import pull_gsheet
 import pandas as pd
 import discord
+import sys
 
-################################# FUNCTIONS ################################# 
-def formatDF(dataframe):
-    dataframe.dropna(inplace=True, how='all')
-    dataframe.dropna(inplace=True, axis='columns')
+sys.path.append('./resources')
 
-    new_header = dataframe.iloc[0]
-    dataframe = dataframe[1:] 
-    dataframe.columns = new_header
-    
-    return dataframe
-
-def getPDL(summoner, formatedDf):
-    try:
-        return int(formatedDf.loc[formatedDf['Invocador'] == summoner]['PDL'].iloc[:,0])
-    except TypeError:
-        return -1
-################################# FUNCTIONS ################################# 
-
+import data_format
+import keep_alive
+import pull_gsheet
 
 intents = discord.Intents.all()
 client = discord.Client(intents=intents)
@@ -40,7 +26,7 @@ async def on_ready():
             break
 
     print(
-        f'{client.user} is connected to the following guild: \n' 
+        f'{client.user} is connected to the following guild: ' 
         f'{guild.name} (id: {guild.id})'
     )
 
@@ -51,7 +37,7 @@ async def on_message(message):
 
     if message.content.startswith('$ranking'):
       data = pull_gsheet.pull_sheet_data(GSHEET_SCOPES,SPREADSHEET_ID,DATA_TAB)
-      df = formatDF(pd.DataFrame(data=data))
+      df = data_format.formatDF(pd.DataFrame(data=data))
 
       response = '. \n'
       response += 'RANKING DO 5X DA RAPAZIADA \n'
@@ -63,28 +49,28 @@ async def on_message(message):
 
       await message.channel.send(response)
 
-    if message.content.startswith('$membros-online'):
+    if message.content.startswith('$membrosonline'):
       data = pull_gsheet.pull_sheet_data(GSHEET_SCOPES,SPREADSHEET_ID,DATA_TAB)
-      df = formatDF(pd.DataFrame(data=data)) 
+      df = data_format.formatDF(pd.DataFrame(data=data)) 
 
       membros = client.get_channel(DISCORD_CHANNEL).members
         
       for membro in membros:
           name = str(membro.nick) if str(membro.nick) != 'None' else str(membro.name)
-          if getPDL(name, df) != -1 and str(membro.status) != 'offline':
-              await message.channel.send(name + ' - PDL: ' + str(getPDL(name, df)))
+          if data_format.getPDL(name, df) != -1 and str(membro.status) != 'offline':
+              await message.channel.send(name + ' - PDL: ' + str(data_format.getPDL(name, df)))
 
     if message.content.startswith('$tiratime'):
       data = pull_gsheet.pull_sheet_data(GSHEET_SCOPES,SPREADSHEET_ID,DATA_TAB)
-      df = formatDF(pd.DataFrame(data=data))
+      df = data_format.formatDF(pd.DataFrame(data=data))
       
       membros = client.get_channel(DISCORD_CHANNEL).members
       df_tiratime = pd.DataFrame(columns=['Invocador','PDL'])
 
       for membro in membros:
           name = str(membro.nick) if str(membro.nick) != 'None' else str(membro.name)
-          if getPDL(name, df) != -1 and str(membro.status) != 'offline':
-              df_tiratime = df_tiratime.append({'Invocador': name, 'PDL' : getPDL(name, df)}, ignore_index=True)
+          if data_format.getPDL(name, df) != -1 and str(membro.status) != 'offline':
+              df_tiratime = df_tiratime.append({'Invocador': name, 'PDL' : data_format.getPDL(name, df)}, ignore_index=True)
 
       df_tiratime = df_tiratime.sort_values(by='PDL', ascending=False).reset_index()
       print(df_tiratime)
@@ -105,5 +91,5 @@ async def on_message(message):
           response = 'Não existem 10 jogadores online na sala '+ client.get_channel(DISCORD_CHANNEL).name + ' ou o nick do discord não coincide com o da planilha.'
           await message.channel.send(response)
 
-keep_alive()
+keep_alive.keep_alive()
 client.run(DISCORD_TOKEN)
